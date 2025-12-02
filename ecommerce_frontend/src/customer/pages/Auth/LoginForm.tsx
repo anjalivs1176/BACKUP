@@ -1,0 +1,113 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
+const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [errorMsg, setErrorMsg] = useState(""); // ⭐ error message UI
+  const navigate = useNavigate()
+
+  // SEND OTP
+  const handleSendOtp = async () => {
+    setErrorMsg("");
+
+    try {
+      await axios.post("http://localhost:8080/auth/send/login-signup-otp", {
+        email: "signin_" + email,   // 🔥 LOGIN PREFIX
+        role: "ROLE_CUSTOMER"
+      });
+
+      setOtpSent(true);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Something went wrong";
+      setErrorMsg(msg);
+    }
+  };
+
+  // LOGIN
+const handleLogin = async () => {
+  try {
+    const res = await axios.post("http://localhost:8080/auth/signing", {
+      email,
+      otp,
+      role: "ROLE_CUSTOMER"
+    });
+
+    // Save details
+    localStorage.setItem("token", res.data.jwt);
+    localStorage.setItem("user", res.data.name);
+
+    // notify navbar
+    window.dispatchEvent(new Event("authChange"));
+
+    navigate("/");
+
+  } catch (error: any) {
+    const msg = error.response?.data?.message || "Invalid OTP!";
+    setErrorMsg(msg);
+  }
+};
+
+
+
+
+  return (
+    <div>
+      <h1 className='text-xl font-semibold mb-4'>Login</h1>
+
+      {/* ⭐ ERROR MESSAGE */}
+      {errorMsg && (
+        <p className="text-red-600 text-sm mb-3">{errorMsg}</p>
+      )}
+
+      <input
+        type="email"
+        placeholder="Enter email"
+        className="w-full border p-2 rounded mb-2"
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          setErrorMsg("");
+        }}
+      />
+
+      {!otpSent && (
+        <Button
+          className="w-full p-2 mt-2"
+          variant='contained'
+          onClick={handleSendOtp}
+        >
+          Send OTP
+        </Button>
+      )}
+
+      {otpSent && (
+        <>
+          <input
+            type="text"
+            placeholder="Enter OTP"
+            className="w-full border p-2 rounded mt-4"
+            value={otp}
+            onChange={(e) => {
+              setOtp(e.target.value);
+              setErrorMsg("");
+            }}
+          />
+
+          <Button
+            className="w-full p-2 mt-4"
+            variant='contained'
+            onClick={handleLogin}
+          >
+            Login
+          </Button>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default LoginForm;
