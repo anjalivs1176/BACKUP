@@ -56,7 +56,7 @@ public class SellerServiceImpl implements SellerService {
         newSeller.setSellerName(seller.getSellerName());
         newSeller.setPickupAddress(savedAddress);
         newSeller.setMobile(seller.getMobile());
-        newSeller.setGSTIN(seller.getGSTIN());
+        newSeller.setGstin(seller.getGstin());
         newSeller.setBankDetails(seller.getBankDetails());
         newSeller.setBusinessDetails(seller.getBusinessDetails());
         newSeller.setRole(USER_ROLE.ROLE_SELLER);
@@ -107,7 +107,7 @@ public Seller updateSeller(Long id, Seller update) throws Exception {
     if (update.getSellerName() != null) seller.setSellerName(update.getSellerName());
     if (update.getMobile() != null) seller.setMobile(update.getMobile());
     if (update.getEmail() != null) seller.setEmail(update.getEmail());
-    if (update.getGSTIN() != null) seller.setGSTIN(update.getGSTIN());
+    if (update.getGstin() != null) seller.setGstin(update.getGstin());
 
     // ---------------- BUSINESS DETAILS ----------------
     if (update.getBusinessDetails() != null) {
@@ -202,5 +202,10 @@ public Seller updateSeller(Long id, Seller update) throws Exception {
         Seller seller = this.getSellerById(sellerId);
         seller.setAccountStatus(status);
         return sellerRepository.save(seller);
+    }
+
+    @Override
+    public List<Seller> getSellersByStatus(AccountStatus status) {
+        return sellerRepository.findByAccountStatus(status);
     }
 }

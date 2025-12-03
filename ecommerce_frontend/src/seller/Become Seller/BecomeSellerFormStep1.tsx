@@ -15,9 +15,9 @@ const BecomeSellerFormStep1 = ({ formik }: any) => {
         />
         <TextField
           fullWidth
-          name="GSTIN"
+          name="gstin"
           label="GSTIN"
-          value={formik.values.GSTIN}
+          value={formik.values.gstin}
           onChange={formik.handleChange}
         />
       </div>

@@ -9,4 +9,5 @@ import java.util.List;
 public interface SellerRepository extends JpaRepository<Seller,Long> {
     Seller findByEmail(String email);
     List<Seller> findByAccountStatus(AccountStatus stats);
+
 }

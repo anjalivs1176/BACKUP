@@ -1,43 +1,53 @@
-import { Button, FormControl, InputLabel, MenuItem, Paper, Select, Table, TableBody, TableContainer, TableHead, TableRow } from '@mui/material'
-import React, { useState } from 'react'
-import { SelectChangeEvent } from '@mui/material/Select';
-import { styled } from '@mui/material/styles';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  CircularProgress
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { styled } from "@mui/material/styles";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import { adminApi } from "../../services/adminApi";
 
-
+/* Use your full statuses (with description) */
 const accountStatuses = [
-    {
-        status: 'PENDING_VERIFICATION',
-        title: 'Pending Verification',
-        description: 'The account is awaiting verification. User cannot access full features yet.'
-    },
-    {
-        status: 'ACTIVE',
-        title: 'Active',
-        description: 'The account is fully active and the user has full access.'
-    },
-    {
-        status: 'SUSPENDED',
-        title: 'Suspended',
-        description: 'The account is temporarily suspended due to policy violations or issues.'
-    },
-    {
-        status: 'DEACTIVATED',
-        title: 'Deactivated',
-        description: 'The user has deactivated their account voluntarily.'
-    },
-    {
-        status: 'BANNED',
-        title: 'Banned',
-        description: 'The account has been banned permanently due to serious violations.'
-    },
-    {
-        status: 'CLOSED',
-        title: 'Closed',
-        description: 'The account has been permanently closed and cannot be reactivated.'
-    }
-]
-
+  {
+    status: "PENDING_VERIFICATION",
+    title: "Pending Verification",
+    description:
+      "The account is awaiting verification. User cannot access full features yet.",
+  },
+  { status: "ACTIVE", title: "Active", description: "Fully active user." },
+  {
+    status: "SUSPENDED",
+    title: "Suspended",
+    description: "Temporarily suspended due to policy violations or issues.",
+  },
+  {
+    status: "DEACTIVATED",
+    title: "Deactivated",
+    description: "User voluntarily deactivated account.",
+  },
+  {
+    status: "BANNED",
+    title: "Banned",
+    description: "Permanently banned due to serious violations.",
+  },
+  {
+    status: "CLOSED",
+    title: "Closed",
+    description: "Permanently closed and cannot be reactivated.",
+  },
+];
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -50,94 +60,167 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
+  "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
-  '&:last-child td, &:last-child th': {
+  "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
 
-function createData(
-  name: string,
-  email: string,
-  mobile: string,
-  businessName: string,
-  gstin: string,
-  status: string,
-  changeStatus:string
-) {
-  return { name,email,mobile,businessName,gstin,status,changeStatus };
-}
-
-const rows = [
-  createData('Ram', 'ram@gmail.com', '9876543210', 'Ram Clothing','ADH466B34','ACTIVE','CHANGE STATUS')
-];
-
 const SellersTable = () => {
-    const [selectedStatus, setSelectedStatus] = useState("ACTIVE")
+  // empty string means "no filter" -> fetch all sellers
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
-    const handleChange = (event: SelectChangeEvent) => {
-        setSelectedStatus(event.target.value)
-    };
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  // map to hold per-row update flags (id -> boolean)
+  const [updatingMap, setUpdatingMap] = useState<Record<number, boolean>>({});
 
-    return (
-        <>
-            <div className='pb-5 w-60'>
-                <FormControl fullWidth>
-                    <InputLabel id="account-status-label">Account Status</InputLabel>
-                    <Select
-                        labelId="account-status-label"
-                        id="account-status-select"
-                        value={selectedStatus}
-                        label="Account Status"
-                        onChange={handleChange}
-                    >
-                        {accountStatuses.map((item) => (
-                            <MenuItem key={item.status} value={item.status}>
-                                {item.title}
+  const handleFilterChange = (event: SelectChangeEvent) => {
+    setSelectedStatus(event.target.value as string);
+  };
+
+  // Fetch sellers from backend (send status only if a filter is selected)
+  const fetchSellers = async () => {
+    try {
+      setLoading(true);
+      const statusToSend = selectedStatus && selectedStatus.length > 0 ? selectedStatus : undefined;
+      const response = await adminApi.getSellers(statusToSend);
+      // handle possibility backend returns { content: [...] } or plain array
+      const data = response.data?.content ?? response.data;
+      setSellers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching sellers:", err);
+      setSellers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Whenever filter changes, fetch again
+  useEffect(() => {
+    fetchSellers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus]);
+
+  // update single seller status
+  const handleRowStatusChange = async (sellerId: number, newStatus: string) => {
+    try {
+      setUpdatingMap((m) => ({ ...m, [sellerId]: true }));
+      await adminApi.updateSellerStatus(sellerId, newStatus);
+      // Optimistically update UI: update seller in local state to avoid re-fetch delay
+      setSellers((prev) =>
+        prev.map((s) => (s.id === sellerId ? { ...s, status: newStatus } : s))
+      );
+    } catch (err) {
+      console.error("Failed to update seller status:", err);
+      // you can show a toast here
+    } finally {
+      setUpdatingMap((m) => ({ ...m, [sellerId]: false }));
+    }
+  };
+
+  return (
+    <>
+      <div className="pb-5 w-60">
+        <FormControl fullWidth>
+          <InputLabel id="account-status-label">Account Status</InputLabel>
+          <Select
+            labelId="account-status-label"
+            id="account-status-select"
+            value={selectedStatus}
+            label="Account Status"
+            onChange={handleFilterChange}
+            displayEmpty
+          >
+            {/* <MenuItem value="">
+              <em>All statuses</em>
+            </MenuItem> */}
+            {accountStatuses.map((item) => (
+              <MenuItem key={item.status} value={item.status} title={item.description}>
+                {item.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 700 }} aria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Seller Name</StyledTableCell>
+              <StyledTableCell>Email</StyledTableCell>
+              <StyledTableCell align="right">Mobile</StyledTableCell>
+              <StyledTableCell align="right">Business Name</StyledTableCell>
+              <StyledTableCell align="right">GSTIN</StyledTableCell>
+              <StyledTableCell align="right">Account Status</StyledTableCell>
+              <StyledTableCell align="right">Change Status</StyledTableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {loading ? (
+              <StyledTableRow>
+                <StyledTableCell colSpan={7} align="center">
+                  <CircularProgress size={24} />
+                </StyledTableCell>
+              </StyledTableRow>
+            ) : sellers.length === 0 ? (
+              <StyledTableRow>
+                <StyledTableCell colSpan={7} align="center">
+                  No sellers found
+                </StyledTableCell>
+              </StyledTableRow>
+            ) : (
+              sellers.map((row: any) => {
+                const isUpdating = !!updatingMap[row.id];
+                return (
+                  <StyledTableRow key={row.id}>
+                    {/* <StyledTableCell>{row.name}</StyledTableCell>
+                    <StyledTableCell>{row.email}</StyledTableCell>
+                    <StyledTableCell align="right">{row.mobile}</StyledTableCell>
+                    <StyledTableCell align="right">{row.businessName}</StyledTableCell>
+                    <StyledTableCell align="right">{row.gstin}</StyledTableCell>
+                    <StyledTableCell align="right">{row.status}</StyledTableCell> */}
+
+
+                    <StyledTableCell>{row.sellerName}</StyledTableCell>
+<StyledTableCell>{row.email}</StyledTableCell>
+<StyledTableCell align="right">{row.mobile}</StyledTableCell>
+<StyledTableCell align="right">{row.businessDetails?.businessName}</StyledTableCell>
+<StyledTableCell align="right">{row.gstin}</StyledTableCell>
+<StyledTableCell align="right">{row.accountStatus}</StyledTableCell>
+
+                    <StyledTableCell align="right" style={{ color: "#00927c" }}>
+                      {/* Select to change status per row */}
+                      <FormControl size="small" variant="standard">
+                        <Select
+                          value={row.status ?? ""}
+                          onChange={(e) =>
+                            handleRowStatusChange(row.id, e.target.value as string)
+                          }
+                          disabled={isUpdating}
+                          title="Change seller account status"
+                        >
+                          {accountStatuses.map((s) => (
+                            <MenuItem key={s.status} value={s.status} title={s.description}>
+                              {s.title}
                             </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </div>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
+  );
+};
 
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                    <TableHead>
-                        <TableRow>
-                            <StyledTableCell>Seller Name</StyledTableCell>
-                            <StyledTableCell >Email</StyledTableCell>
-                            <StyledTableCell align="right">Mobile</StyledTableCell>
-                            <StyledTableCell align="right">Business Name</StyledTableCell>
-                            <StyledTableCell align="right">GSTIN</StyledTableCell>
-                            <StyledTableCell align="right">Account Status</StyledTableCell>
-                            <StyledTableCell align="right">Change Status</StyledTableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows.map((row) => (
-                            <StyledTableRow key={row.name}>
-                                <StyledTableCell component="th" scope="row">
-                                    {row.name}
-                                </StyledTableCell>
-                                <StyledTableCell >{row.email}</StyledTableCell>
-                                <StyledTableCell align="right">{row.mobile}</StyledTableCell>
-                                <StyledTableCell align="right">{row.businessName}</StyledTableCell>
-                                <StyledTableCell align="right">{row.gstin}</StyledTableCell>
-                                <StyledTableCell align="right">{row.status}</StyledTableCell>
-                                <StyledTableCell align="right" style={{ color: '#00927c', }}>
-                                    <Button>Change Status</Button>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </>
-
-    )
-}
-
-export default SellersTable
+export default SellersTable;
