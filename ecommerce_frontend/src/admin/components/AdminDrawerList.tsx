@@ -45,7 +45,14 @@ const menu=[
         path:"/admin/deals",
         icon: <LocalOffer className='text-primary-color'/>,
         activeIcon: <LocalOffer className='text-white'/>
-    }
+    },
+    {
+    name:"Add Home Category",
+    path:"/admin/add-home-category",
+    icon: <Add className='text-primary-color'/>,
+    activeIcon: <Add className='text-white'/>
+},
+
 ];
 
 const menu2 = [

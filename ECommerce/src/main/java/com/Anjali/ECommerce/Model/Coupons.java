@@ -1,11 +1,12 @@
 package com.Anjali.ECommerce.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,17 +21,13 @@ public class Coupons {
     private Long Id;
 
     private String code;
-
     private double discountPercentage;
-
     private LocalDate validityStratDate;
-
     private LocalDate validityEndDate;
-
     private double minimumOrderValue;
-
     private boolean isActive = true;
 
-    @ManyToMany(mappedBy = "usedCoupons")
-    private Set<User> usedByUsers = new HashSet<>();
+    @ManyToMany(mappedBy = "usedCoupons", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<User> usedByUsers = new ArrayList<>();
 }

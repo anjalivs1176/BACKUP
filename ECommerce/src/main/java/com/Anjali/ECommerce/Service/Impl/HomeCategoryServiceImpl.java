@@ -65,4 +65,13 @@ public class HomeCategoryServiceImpl implements HomeCategoryService {
     public List<HomeCategory> getAllHomeCategories() {
         return homeCategoryRepository.findAll();
     }
+
+
+    @Override
+public void deleteCategory(Long id) throws Exception {
+    HomeCategory category = homeCategoryRepository.findById(id)
+            .orElseThrow(() -> new Exception("Home category not found"));
+    homeCategoryRepository.delete(category);
+}
+
 }

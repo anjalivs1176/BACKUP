@@ -1,8 +1,10 @@
 package com.Anjali.ECommerce.Model;
 
+import jakarta.persistence.Embeddable;
 import lombok.Data;
 
 @Data
+@Embeddable
 public class BusinessDetails {
 
     private String businessName;

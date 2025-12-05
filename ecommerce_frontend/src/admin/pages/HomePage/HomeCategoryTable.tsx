@@ -1,13 +1,16 @@
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import { Edit } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import { Edit, Delete } from "@mui/icons-material";
+import { Button } from "@mui/material";
+import { useEffect, useState } from "react";
+import { adminApi } from "../../../admin/services/adminApi";
+import UpdateHomeCategory from "./UpdateHomeCategory";   // ⭐ ADD THIS
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -20,64 +23,101 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
+  "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
-  '&:last-child td, &:last-child th': {
+  "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
 
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
-) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-
 export default function HomeCategoryTable() {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [editData, setEditData] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const fetchData = async () => {
+    const res = await adminApi.getHomeCategories();
+    console.log("DATA FROM BACKEND", res.data);
+    setCategories(res.data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const deleteCategory = async (id: number) => {
+    await adminApi.deleteHomeCategory(id);
+    fetchData();
+  };
+
+  const handleEdit = (row: any) => {
+    setEditData(row);
+    setOpen(true);
+  };
+
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 700 }} aria-label="customized table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>No</StyledTableCell>
-            <StyledTableCell >Id</StyledTableCell>
-            <StyledTableCell align="right">Image</StyledTableCell>
-            <StyledTableCell align="right">Category</StyledTableCell>
-            <StyledTableCell align="right">Update</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <StyledTableRow key={row.name}>
-              <StyledTableCell component="th" scope="row">
-                {row.name}
-              </StyledTableCell>
-              <StyledTableCell >{row.calories}</StyledTableCell>
-              <StyledTableCell >{row.fat}</StyledTableCell>
-              <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-              <StyledTableCell align="right">
-                <Button style={{color:"orange"}}>
-                  <Edit/>
-                </Button>
+    <>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 700 }} aria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>No</StyledTableCell>
+              <StyledTableCell>ID</StyledTableCell>
+              <StyledTableCell>Image</StyledTableCell>
+              <StyledTableCell>Category</StyledTableCell>
+              <StyledTableCell align="right">Actions</StyledTableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {categories.map((row, index) => (
+              <StyledTableRow key={row.id}>
+                <StyledTableCell>{index + 1}</StyledTableCell>
+                <StyledTableCell>{row.id}</StyledTableCell>
+
+                <StyledTableCell>
+                  <img
+                    src={row.image}
+                    alt=""
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "8px",
+                    }}
+                  />
                 </StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+
+                <StyledTableCell>{row.categoryId}</StyledTableCell>
+
+                <StyledTableCell align="right">
+                  <Button
+                    style={{ color: "orange" }}
+                    onClick={() => handleEdit(row)}
+                  >
+                    <Edit />
+                  </Button>
+
+                  <Button
+                    style={{ color: "red" }}
+                    onClick={() => deleteCategory(row.id)}
+                  >
+                    <Delete />
+                  </Button>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* ⭐ THE MODAL NOW WORKS */}
+      <UpdateHomeCategory
+        open={open}
+        onClose={() => setOpen(false)}
+        data={editData}
+        onUpdated={fetchData}
+      />
+    </>
   );
 }

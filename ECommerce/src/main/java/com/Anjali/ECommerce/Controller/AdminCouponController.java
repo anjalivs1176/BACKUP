@@ -21,44 +21,78 @@ public class AdminCouponController {
     private final UserService userService;
     private final CartService cartService;
 
-    // Endpoint to apply or remove a coupon for the logged-in user
-    @GetMapping("/apply") // Added GET mapping for the method
-    public ResponseEntity<Cart> applyCoupon(
-            @RequestParam String apply,         // "true" to apply, "false" to remove
-            @RequestParam String code,          // Coupon code
-            @RequestParam double orderValue,    // Current order value
-            @RequestHeader("Authorization") String jwt) throws Exception {
+    // ============================
+    // ⭐ APPLY COUPON
+    // GET /api/coupons/apply?code=TEST50&orderValue=1500
+    // ============================
+    @GetMapping("/apply")
+    public ResponseEntity<?> applyCoupon(
+            @RequestParam String code,
+            @RequestParam double orderValue,
+            @RequestHeader("Authorization") String jwt
+    ) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
 
-        // Get user from JWT token
-        User user = userService.findUserByJwtToken(jwt);
+            Cart cart = couponService.applyCoupon(code, orderValue, user);
 
-        Cart cart;
-        if (apply.equals("true")) {
-            // Apply coupon
-            cart = couponService.applyCoupon(code, orderValue, user);
-        } else {
-            // Remove coupon
-            cart = couponService.removeCoupon(code, user);
+            return ResponseEntity.ok(cart);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        return ResponseEntity.ok(cart);
     }
 
-    // Admin endpoint to create a new coupon
+    // ============================
+    // ⭐ REMOVE COUPON
+    // ============================
+    @GetMapping("/remove")
+    public ResponseEntity<?> removeCoupon(
+            @RequestParam String code,
+            @RequestHeader("Authorization") String jwt
+    ) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+
+            Cart cart = couponService.removeCoupon(code, user);
+
+            return ResponseEntity.ok(cart);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ============================
+    // ⭐ CREATE COUPON (ADMIN)
+    // ============================
     @PostMapping("/admin/create")
     public ResponseEntity<Coupons> createCoupon(@RequestBody Coupons coupon) throws Exception {
         Coupons createdCoupon = couponService.createCoupon(coupon);
         return ResponseEntity.ok(createdCoupon);
     }
 
-    // Admin endpoint to delete a coupon by ID
+    // ============================
+    // ⭐ GET ACTIVE COUPONS (USER)
+    // ============================
+    @GetMapping("/active")
+    public ResponseEntity<List<Coupons>> getActiveCoupons() {
+        List<Coupons> activeCoupons = couponService.findActiveCoupons();
+        return ResponseEntity.ok(activeCoupons);
+    }
+
+    // ============================
+    // ⭐ DELETE COUPON (ADMIN)
+    // ============================
     @DeleteMapping("/admin/delete/{id}")
     public ResponseEntity<?> deleteCoupon(@PathVariable Long id) throws Exception {
         couponService.deleteCoupon(id);
         return ResponseEntity.ok("Coupon deleted successfully");
     }
 
-    // Admin endpoint to get all coupons
+    // ============================
+    // ⭐ GET ALL COUPONS (ADMIN)
+    // ============================
     @GetMapping("/admin/all")
     public ResponseEntity<List<Coupons>> getAllCoupons() throws Exception {
         List<Coupons> coupons = couponService.findAllCoupons();

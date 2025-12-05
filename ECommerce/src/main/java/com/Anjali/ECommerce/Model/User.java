@@ -6,8 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Getter
@@ -16,6 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long Id;
@@ -29,13 +32,13 @@ public class User {
 
     private String mobile;
 
-    private USER_ROLE role = USER_ROLE.ROLE_CUSTOMER ;
+    private USER_ROLE role = USER_ROLE.ROLE_CUSTOMER;
 
-    @OneToMany
+    @ElementCollection
+    @CollectionTable(name = "user_addresses", joinColumns = @JoinColumn(name = "user_id"))
     private Set<Address> addresses = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Coupons> usedCoupons = new HashSet<>();
-
+    private List<Coupons> usedCoupons = new ArrayList<>();
 }

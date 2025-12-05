@@ -61,6 +61,13 @@ public class AppConfig {
                         .requestMatchers("/sellers/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
 
+
+
+                        .requestMatchers(
+                            "/api/coupons/apply",
+                            "/api/coupons/active"
+                        ).authenticated()
+
                         .anyRequest().permitAll()
                 )
 

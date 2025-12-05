@@ -1,13 +1,15 @@
 package com.Anjali.ECommerce.Model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+// import jakarta.persistence.GeneratedValue;
+// import jakarta.persistence.GenerationType;
+// import jakarta.persistence.Id;
+import jakarta.persistence.Embeddable;
+
 import lombok.*;
 
-@Entity
+@Embeddable
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,9 +17,9 @@ import lombok.*;
 @EqualsAndHashCode
 public class Address {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long Id;
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.AUTO)
+    // private Long Id;
 
     private String name;
 

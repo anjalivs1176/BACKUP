@@ -1,13 +1,26 @@
 package com.Anjali.ECommerce.Model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.Anjali.ECommerce.Domain.OrderStatus;
 import com.Anjali.ECommerce.Domain.PaymentStatus;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.ArrayList;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Setter
@@ -33,7 +46,8 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @ManyToOne
+    // @ManyToOne
+    @Embedded
     private Address shippingAddress;
 
     @Embedded
