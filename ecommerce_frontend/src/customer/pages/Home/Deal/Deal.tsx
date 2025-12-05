@@ -1,58 +1,14 @@
-import React from 'react'
-import DealCard from './DealCard'
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import Slider from "react-slick";
+import DealCard from "./DealCard";
+import { dealData } from "../../../../data/DealData/dealData";
 
 const Deal = () => {
-
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 2,
-    responsive: [
-      {
-        breakpoint: 1280, // large screens
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: 2,
-        }
-      },
-      {
-        breakpoint: 1024, // laptops/tablets
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 2,
-        }
-      },
-      {
-        breakpoint: 768, // tablets vertical
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 480, // mobile phones
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      }
-    ]
-  };
-
   return (
-    <div className='py-5 lg:px-20'>
-      <Slider {...settings}>
-        {Array.from({ length: 12 }).map((_, index) => (
-          <DealCard key={index} />
-        ))}
-      </Slider>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4">
+      {dealData.map((deal) => (
+        <DealCard key={deal.id} deal={deal} />
+      ))}
     </div>
   );
-}
+};
 
 export default Deal;

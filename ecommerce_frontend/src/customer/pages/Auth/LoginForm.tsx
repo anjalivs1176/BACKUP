@@ -28,6 +28,70 @@ const LoginForm = () => {
   };
 
   // LOGIN
+// const handleLogin = async () => {
+//   try {
+//     const res = await axios.post("http://localhost:8080/auth/signing", {
+//       email,
+//       otp,
+//       role: "ROLE_CUSTOMER"
+//     });
+
+//     // Save details
+//     localStorage.setItem("token", res.data.jwt);
+//     localStorage.setItem("user", res.data.name);
+
+//     // notify navbar
+//     window.dispatchEvent(new Event("authChange"));
+
+//     navigate("/");
+
+//   } catch (error: any) {
+//     const msg = error.response?.data?.message || "Invalid OTP!";
+//     setErrorMsg(msg);
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const handleLogin = async () => {
   try {
     const res = await axios.post("http://localhost:8080/auth/signing", {
@@ -36,20 +100,42 @@ const handleLogin = async () => {
       role: "ROLE_CUSTOMER"
     });
 
-    // Save details
-    localStorage.setItem("token", res.data.jwt);
-    localStorage.setItem("user", res.data.name);
+    const { jwt, role, name } = res.data;
 
-    // notify navbar
+    // Save token + user info
+    localStorage.setItem("token", jwt);
+    localStorage.setItem("user", name);
+    localStorage.setItem("role", role);
+
+    // Update navbar
     window.dispatchEvent(new Event("authChange"));
 
-    navigate("/");
+    // 🔥 Redirect based on role
+    if (role === "ROLE_ADMIN") {
+      navigate("/admin");
+    } else if (role === "ROLE_SELLER") {
+      navigate("/seller");
+    } else {
+      navigate("/");
+    }
 
   } catch (error: any) {
     const msg = error.response?.data?.message || "Invalid OTP!";
     setErrorMsg(msg);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

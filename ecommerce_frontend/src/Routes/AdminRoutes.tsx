@@ -8,6 +8,7 @@ import ElectronicTable from '../admin/pages/HomePage/ElectronicTable'
 import ShopByCategoryTable from '../admin/pages/HomePage/ShopByCategoryTable'
 import Deal from '../admin/pages/HomePage/Deal'
 import AddHomeCategoryForm from '../admin/pages/HomePage/AddHomeCategoryForm'
+import AdminAccount from '../admin/pages/Account/AdminAccount'
 
 const AdminRoutes = () => {
   return (
@@ -21,6 +22,8 @@ const AdminRoutes = () => {
             <Route path='/shop-by-category' element={<ShopByCategoryTable/>}/>
             <Route path='/deals' element={<Deal/>}/>
             <Route path="/add-home-category" element={<AddHomeCategoryForm />}/>
+            <Route path="/account" element={<AdminAccount />} />
+
 
 
         </Routes>

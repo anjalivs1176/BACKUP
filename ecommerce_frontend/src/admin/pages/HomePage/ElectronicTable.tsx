@@ -4,7 +4,7 @@ import HomeCategoryTable from './HomeCategoryTable'
 const ElectronicTable = () => {
   return (
     <div>
-      <HomeCategoryTable/>
+      {/* <HomeCategoryTable/> */}
     </div>
   )
 }

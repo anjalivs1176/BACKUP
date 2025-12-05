@@ -58,7 +58,7 @@ const menu=[
 const menu2 = [
     {
         name:"Account",
-        path:"/", // later i will implement
+        path:"/admin/account", // later i will implement
         icon: <AccountBox className='text-primary-color'/>,
         activeIcon: <AccountBox className='text-white'/>
     },

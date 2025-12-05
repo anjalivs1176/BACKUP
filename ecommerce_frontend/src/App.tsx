@@ -100,7 +100,8 @@ function App() {
   const hideNavbar =
     location.pathname.startsWith('/seller') ||
     location.pathname.startsWith('/become-seller') ||
-    location.pathname.startsWith('/verify-seller');
+    location.pathname.startsWith('/verify-seller')||
+    location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");

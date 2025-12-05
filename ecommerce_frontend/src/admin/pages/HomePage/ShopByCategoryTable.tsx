@@ -4,7 +4,7 @@ import HomeCategoryTable from './HomeCategoryTable'
 const ShopByCategoryTable = () => {
   return (
     <div>
-      <HomeCategoryTable/>
+      {/* <HomeCategoryTable/> */}
     </div>
   )
 }
